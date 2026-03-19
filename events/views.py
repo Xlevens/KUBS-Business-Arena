@@ -1,7 +1,7 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
-from django.http import JsonResponse
 from django.views.decorators.http import require_POST
+from django.http import JsonResponse
 from django.db import transaction as db_transaction
 from rest_framework import viewsets, status, permissions
 from rest_framework.decorators import action
@@ -24,7 +24,7 @@ from .permissions import IsRoundHead
 # ---------------------------------------------------------------------------
 
 def introduction(request):
-    """Introduction / landing page (placeholder)."""
+    """Introduction / landing page."""
     return render(request, 'events/introduction.html')
 
 
@@ -35,20 +35,41 @@ def register(request):
 
 
 def leaderboard(request):
-    """Live leaderboard page."""
-    rounds = Round.objects.prefetch_related('contestants').select_related('event').order_by('event__name', 'name')
+    """Live leaderboard page — only shows rounds the round head has made visible."""
+    rounds = (
+        Round.objects
+        .filter(leaderboard_visible=True)
+        .prefetch_related('contestants')
+        .select_related('event')
+        .order_by('event__name', 'name')
+    )
     return render(request, 'events/leaderboard.html', {'rounds': rounds})
 
 
 @login_required
 def round_head_dashboard(request):
     """Round head admin dashboard."""
-    managed_rounds = Round.objects.filter(round_head=request.user).prefetch_related('contestants')
-    if not managed_rounds.exists() and not request.user.is_superuser:
-        return render(request, 'events/no_access.html', status=403)
     if request.user.is_superuser:
         managed_rounds = Round.objects.prefetch_related('contestants').select_related('event')
+    else:
+        managed_rounds = Round.objects.filter(round_head=request.user).prefetch_related('contestants').select_related('event')
+        if not managed_rounds.exists():
+            return render(request, 'events/no_access.html', status=403)
     return render(request, 'events/dashboard.html', {'managed_rounds': managed_rounds})
+
+
+@login_required
+@require_POST
+def toggle_leaderboard(request, round_id):
+    """Toggle leaderboard visibility for a round. Only the round head or superuser can do this."""
+    if request.user.is_superuser:
+        rnd = get_object_or_404(Round, pk=round_id)
+    else:
+        rnd = get_object_or_404(Round, pk=round_id, round_head=request.user)
+
+    rnd.leaderboard_visible = not rnd.leaderboard_visible
+    rnd.save(update_fields=['leaderboard_visible'])
+    return JsonResponse({'visible': rnd.leaderboard_visible})
 
 
 # ---------------------------------------------------------------------------
@@ -103,7 +124,6 @@ class PointTransactionViewSet(viewsets.GenericViewSet):
     permission_classes = [IsRoundHead]
 
     def _get_contestant_for_round_head(self, contestant_id, user):
-        """Return contestant only if it belongs to a round managed by this user."""
         qs = Contestant.objects.select_related('round')
         if not user.is_superuser:
             qs = qs.filter(round__round_head=user)
@@ -154,12 +174,18 @@ class PointTransactionViewSet(viewsets.GenericViewSet):
 
 
 class LeaderboardViewSet(viewsets.GenericViewSet):
-    """API endpoint to fetch leaderboard data for live updates."""
+    """API endpoint to fetch leaderboard data — only visible rounds."""
     permission_classes = [permissions.AllowAny]
 
     def list(self, request):
         round_id = request.query_params.get('round')
-        rounds_qs = Round.objects.select_related('event').prefetch_related('contestants').order_by('event__name', 'name')
+        rounds_qs = (
+            Round.objects
+            .filter(leaderboard_visible=True)
+            .select_related('event')
+            .prefetch_related('contestants')
+            .order_by('event__name', 'name')
+        )
         if round_id:
             rounds_qs = rounds_qs.filter(pk=round_id)
 

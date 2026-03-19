@@ -7,6 +7,7 @@
   <p class="live-indicator"><span class="pulse"></span> Live – updates every 10 seconds</p>
 </div>
 
+{% if rounds %}
 <div class="round-filter">
   <label for="round-select">Filter by Round:</label>
   <select id="round-select">
@@ -20,9 +21,23 @@
 <div id="leaderboard-container">
   <p class="loading-text">Loading leaderboard…</p>
 </div>
+
+{% else %}
+{# No rounds are visible yet — game hasn't started #}
+<div style="text-align:center; padding: 5rem 1.5rem;">
+  <div style="font-size:4rem; margin-bottom:1.2rem;">⏳</div>
+  <h3 style="font-size:1.6rem; color:var(--purple-700); margin-bottom:.6rem;">The game hasn't started yet</h3>
+  <p style="color:var(--gray-500); font-size:1rem; max-width:420px; margin:0 auto 2rem;">
+    The leaderboard will appear here once a round head opens the competition.
+    Check back soon!
+  </p>
+  <a href="{% url 'introduction' %}" class="btn btn-secondary">← Back to Home</a>
+</div>
+{% endif %}
 {% endblock %}
 
 {% block extra_scripts %}
+{% if rounds %}
 <script>
   const container = document.getElementById('leaderboard-container');
   const roundSelect = document.getElementById('round-select');
@@ -37,7 +52,11 @@
 
   function renderLeaderboard(data) {
     if (!data || data.length === 0) {
-      container.innerHTML = '<p class="empty-state">No data available yet.</p>';
+      container.innerHTML = `
+        <div style="text-align:center; padding:3rem;">
+          <div style="font-size:2.5rem;margin-bottom:.8rem;">⏳</div>
+          <p style="color:var(--gray-500);">No active rounds at the moment. Check back soon!</p>
+        </div>`;
       return;
     }
 
@@ -97,4 +116,5 @@
   roundSelect.addEventListener('change', startPolling);
   startPolling();
 </script>
+{% endif %}
 {% endblock %}

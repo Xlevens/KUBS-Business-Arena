@@ -12,34 +12,36 @@
   <h3>{{ rnd.event.name }} <span class="round-badge">{{ rnd.name }}</span></h3>
 
   {% if rnd.contestants.all %}
-  <table class="leaderboard-table" id="table-{{ rnd.id }}">
-    <thead>
-      <tr>
-        <th>Name</th>
-        <th>Roll No.</th>
-        <th>Points</th>
-        <th>Actions</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for contestant in rnd.contestants.all %}
-      <tr id="row-{{ contestant.id }}">
-        <td>{{ contestant.name }}</td>
-        <td>{{ contestant.roll_number }}</td>
-        <td class="points-cell" id="pts-{{ contestant.id }}">{{ contestant.points }}</td>
-        <td class="action-cell">
-          <div class="point-form" data-id="{{ contestant.id }}">
-            <input type="number" class="pts-input" min="1" placeholder="Pts" />
-            <input type="text" class="reason-input" placeholder="Reason (optional)" />
-            <button class="btn btn-add" onclick="updatePoints({{ contestant.id }}, 'add', this)">+ Add</button>
-            <button class="btn btn-deduct" onclick="updatePoints({{ contestant.id }}, 'deduct', this)">− Deduct</button>
-          </div>
-          <span class="action-msg" id="msg-{{ contestant.id }}"></span>
-        </td>
-      </tr>
-      {% endfor %}
-    </tbody>
-  </table>
+  <div class="table-wrapper">
+    <table class="leaderboard-table" id="table-{{ rnd.id }}">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Roll No.</th>
+          <th>Points</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for contestant in rnd.contestants.all %}
+        <tr id="row-{{ contestant.id }}">
+          <td>{{ contestant.name }}</td>
+          <td>{{ contestant.roll_number }}</td>
+          <td class="points-cell" id="pts-{{ contestant.id }}">{{ contestant.points }}</td>
+          <td class="action-cell">
+            <div class="point-form" data-id="{{ contestant.id }}">
+              <input type="number" class="pts-input" min="1" placeholder="Pts" />
+              <input type="text" class="reason-input" placeholder="Reason (optional)" />
+              <button class="btn btn-add" onclick="updatePoints({{ contestant.id }}, 'add', this)">+ Add</button>
+              <button class="btn btn-deduct" onclick="updatePoints({{ contestant.id }}, 'deduct', this)">− Deduct</button>
+            </div>
+            <span class="action-msg" id="msg-{{ contestant.id }}"></span>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
   {% else %}
   <p class="empty-state">No contestants registered for this round yet.</p>
   {% endif %}

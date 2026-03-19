@@ -15,14 +15,22 @@
     <div class="nav-brand">
       <a href="{% url 'introduction' %}">🏆 KUBS Business Arena 2026</a>
     </div>
-    <ul class="nav-links">
+
+    <!-- Hamburger toggle (visible on mobile) -->
+    <button class="nav-toggle" id="nav-toggle" aria-label="Toggle navigation" aria-expanded="false">
+      <span></span>
+      <span></span>
+      <span></span>
+    </button>
+
+    <ul class="nav-links" id="nav-links">
       <li><a href="{% url 'introduction' %}">Home</a></li>
       <li><a href="{% url 'register' %}">Register</a></li>
       <li><a href="{% url 'leaderboard' %}">Leaderboard</a></li>
       {% if user.is_authenticated %}
         <li><a href="{% url 'dashboard' %}">Dashboard</a></li>
         <li>
-          <form method="post" action="{% url 'logout' %}" style="display:inline">
+          <form method="post" action="{% url 'logout' %}" style="display:inline;width:100%">
             {% csrf_token %}
             <button type="submit" class="nav-btn">Logout ({{ user.username }})</button>
           </form>
@@ -47,6 +55,36 @@
   <footer class="footer">
     <p>&copy; 2026 KUBS Business Arena. All rights reserved.</p>
   </footer>
+
+  <!-- Mobile nav toggle script -->
+  <script>
+    const toggle = document.getElementById('nav-toggle');
+    const navLinks = document.getElementById('nav-links');
+
+    toggle.addEventListener('click', () => {
+      const isOpen = navLinks.classList.toggle('open');
+      toggle.classList.toggle('open', isOpen);
+      toggle.setAttribute('aria-expanded', isOpen);
+    });
+
+    // Close nav when a link is clicked (single-page or normal navigation)
+    navLinks.querySelectorAll('a').forEach(link => {
+      link.addEventListener('click', () => {
+        navLinks.classList.remove('open');
+        toggle.classList.remove('open');
+        toggle.setAttribute('aria-expanded', 'false');
+      });
+    });
+
+    // Close nav on outside click
+    document.addEventListener('click', (e) => {
+      if (!toggle.contains(e.target) && !navLinks.contains(e.target)) {
+        navLinks.classList.remove('open');
+        toggle.classList.remove('open');
+        toggle.setAttribute('aria-expanded', 'false');
+      }
+    });
+  </script>
 
   {% block extra_scripts %}{% endblock %}
 </body>

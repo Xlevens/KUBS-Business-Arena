@@ -23,6 +23,7 @@ class Round(models.Model):
         blank=True,
         related_name='managed_rounds',
     )
+    leaderboard_visible = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):

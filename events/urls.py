@@ -17,6 +17,9 @@ urlpatterns = [
     path('leaderboard/', views.leaderboard, name='leaderboard'),
     path('dashboard/', views.round_head_dashboard, name='dashboard'),
 
+    # Round head actions
+    path('dashboard/rounds/<int:round_id>/toggle-leaderboard/', views.toggle_leaderboard, name='toggle_leaderboard'),
+
     # REST API
     path('api/', include(router.urls)),
 ]
