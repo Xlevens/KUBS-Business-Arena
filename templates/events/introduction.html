@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+{% block title %}Welcome – KUBS Business Arena 2026{% endblock %}
+
+{% block content %}
+<section class="intro-hero">
+  <div class="intro-content">
+    <div class="intro-badge">✦ Season 2026</div>
+    <h1>KUBS Business Arena</h1>
+    <p class="intro-tagline">Where Ambition Meets Excellence</p>
+    <p class="intro-body">
+      Step into the arena. Compete, strategise, and rise to the top in Karachi University's
+      premier business competition — featuring live scoring, real‑time leaderboards, and
+      the chance to prove you have what it takes.
+    </p>
+    <div class="intro-cta">
+      <a href="{% url 'register' %}" class="btn btn-primary">Register Now →</a>
+      <a href="{% url 'leaderboard' %}" class="btn btn-secondary">View Leaderboard</a>
+    </div>
+  </div>
+</section>
+{% endblock %}

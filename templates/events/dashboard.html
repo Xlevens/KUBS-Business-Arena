@@ -1,0 +1,110 @@
+{% extends 'base.html' %}
+{% block title %}Round Head Dashboard – KUBS Business Arena 2026{% endblock %}
+
+{% block content %}
+<div class="dashboard-header">
+  <h2>⚙️ Round Head Dashboard</h2>
+  <p>Welcome, <strong>{{ user.username }}</strong>. Manage points for your rounds below.</p>
+</div>
+
+{% for rnd in managed_rounds %}
+<div class="round-section dashboard-round">
+  <h3>{{ rnd.event.name }} <span class="round-badge">{{ rnd.name }}</span></h3>
+
+  {% if rnd.contestants.all %}
+  <table class="leaderboard-table" id="table-{{ rnd.id }}">
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Roll No.</th>
+        <th>Points</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for contestant in rnd.contestants.all %}
+      <tr id="row-{{ contestant.id }}">
+        <td>{{ contestant.name }}</td>
+        <td>{{ contestant.roll_number }}</td>
+        <td class="points-cell" id="pts-{{ contestant.id }}">{{ contestant.points }}</td>
+        <td class="action-cell">
+          <div class="point-form" data-id="{{ contestant.id }}">
+            <input type="number" class="pts-input" min="1" placeholder="Pts" />
+            <input type="text" class="reason-input" placeholder="Reason (optional)" />
+            <button class="btn btn-add" onclick="updatePoints({{ contestant.id }}, 'add', this)">+ Add</button>
+            <button class="btn btn-deduct" onclick="updatePoints({{ contestant.id }}, 'deduct', this)">− Deduct</button>
+          </div>
+          <span class="action-msg" id="msg-{{ contestant.id }}"></span>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <p class="empty-state">No contestants registered for this round yet.</p>
+  {% endif %}
+</div>
+{% empty %}
+<div class="card">
+  <p class="empty-state">You are not assigned as a round head for any round. Please contact the administrator.</p>
+</div>
+{% endfor %}
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+  async function updatePoints(contestantId, type, btn) {
+    const form = btn.closest('.point-form');
+    const ptsInput = form.querySelector('.pts-input');
+    const reasonInput = form.querySelector('.reason-input');
+    const msgSpan = document.getElementById('msg-' + contestantId);
+    const points = parseInt(ptsInput.value);
+
+    if (!points || points <= 0) {
+      msgSpan.textContent = '⚠️ Enter a valid point value.';
+      msgSpan.className = 'action-msg error';
+      return;
+    }
+
+    const payload = {
+      contestant: contestantId,
+      transaction_type: type,
+      points: points,
+      reason: reasonInput.value.trim(),
+    };
+
+    try {
+      const res = await fetch('/api/points/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': getCookie('csrftoken'),
+        },
+        body: JSON.stringify(payload),
+      });
+
+      const json = await res.json();
+      if (res.ok) {
+        document.getElementById('pts-' + contestantId).textContent = json.new_total;
+        msgSpan.textContent = '✅ Updated!';
+        msgSpan.className = 'action-msg success';
+        ptsInput.value = '';
+        reasonInput.value = '';
+        setTimeout(() => { msgSpan.textContent = ''; }, 3000);
+      } else {
+        const err = json.error || JSON.stringify(json);
+        msgSpan.textContent = '❌ ' + err;
+        msgSpan.className = 'action-msg error';
+      }
+    } catch (err) {
+      msgSpan.textContent = '❌ Network error.';
+      msgSpan.className = 'action-msg error';
+    }
+  }
+
+  function getCookie(name) {
+    const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
+    return match ? decodeURIComponent(match[2]) : '';
+  }
+</script>
+{% endblock %}

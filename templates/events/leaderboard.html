@@ -1,0 +1,100 @@
+{% extends 'base.html' %}
+{% block title %}Leaderboard – KUBS Business Arena 2026{% endblock %}
+
+{% block content %}
+<div class="leaderboard-header">
+  <h2>🏆 Live Leaderboard</h2>
+  <p class="live-indicator"><span class="pulse"></span> Live – updates every 10 seconds</p>
+</div>
+
+<div class="round-filter">
+  <label for="round-select">Filter by Round:</label>
+  <select id="round-select">
+    <option value="">All Rounds</option>
+    {% for rnd in rounds %}
+      <option value="{{ rnd.id }}">{{ rnd.event.name }} › {{ rnd.name }}</option>
+    {% endfor %}
+  </select>
+</div>
+
+<div id="leaderboard-container">
+  <p class="loading-text">Loading leaderboard…</p>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+  const container = document.getElementById('leaderboard-container');
+  const roundSelect = document.getElementById('round-select');
+  let pollInterval = null;
+
+  function medalEmoji(rank) {
+    if (rank === 1) return '🥇';
+    if (rank === 2) return '🥈';
+    if (rank === 3) return '🥉';
+    return rank;
+  }
+
+  function renderLeaderboard(data) {
+    if (!data || data.length === 0) {
+      container.innerHTML = '<p class="empty-state">No data available yet.</p>';
+      return;
+    }
+
+    let html = '';
+    data.forEach(round => {
+      html += `<div class="round-section">
+        <h3>${round.event_name} <span class="round-badge">${round.round_name}</span></h3>`;
+
+      if (round.contestants.length === 0) {
+        html += '<p class="empty-state">No contestants registered for this round.</p>';
+      } else {
+        html += `<table class="leaderboard-table">
+          <thead>
+            <tr>
+              <th>Rank</th>
+              <th>Name</th>
+              <th>Roll No.</th>
+              <th>Points</th>
+            </tr>
+          </thead>
+          <tbody>`;
+        round.contestants.forEach((c, idx) => {
+          const rank = idx + 1;
+          html += `<tr class="${rank <= 3 ? 'top-' + rank : ''}">
+            <td class="rank-cell">${medalEmoji(rank)}</td>
+            <td>${c.name}</td>
+            <td>${c.roll_number}</td>
+            <td class="points-cell">${c.points}</td>
+          </tr>`;
+        });
+        html += '</tbody></table>';
+      }
+      html += '</div>';
+    });
+
+    container.innerHTML = html;
+  }
+
+  async function fetchLeaderboard() {
+    const roundId = roundSelect.value;
+    const url = '/api/leaderboard/' + (roundId ? '?round=' + roundId : '');
+    try {
+      const res = await fetch(url);
+      const data = await res.json();
+      renderLeaderboard(data);
+    } catch (err) {
+      console.error('Failed to fetch leaderboard:', err);
+    }
+  }
+
+  function startPolling() {
+    fetchLeaderboard();
+    if (pollInterval) clearInterval(pollInterval);
+    pollInterval = setInterval(fetchLeaderboard, 10000);
+  }
+
+  roundSelect.addEventListener('change', startPolling);
+  startPolling();
+</script>
+{% endblock %}

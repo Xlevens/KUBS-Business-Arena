@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+{% block title %}Access Denied – KUBS Business Arena 2026{% endblock %}
+
+{% block content %}
+<div class="card" style="text-align:center; padding: 3rem; max-width: 480px; margin: 4rem auto;">
+  <div style="font-size:3rem;margin-bottom:1rem;">🔒</div>
+  <h2 style="margin-bottom:.6rem;">Access Denied</h2>
+  <p style="color:var(--gray-500);margin-bottom:.4rem;">You are not assigned as a round head for any round.</p>
+  <p style="color:var(--gray-500);margin-bottom:2rem;">Please contact the event administrator.</p>
+  <a href="{% url 'introduction' %}" class="btn btn-primary">Go Home</a>
+</div>
+{% endblock %}

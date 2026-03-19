@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+{% block title %}Login – KUBS Business Arena 2026{% endblock %}
+
+{% block content %}
+<div class="card register-card">
+  <h2>Round Head Login</h2>
+  <p style="color:var(--gray-500);font-size:.9rem;margin-bottom:1.8rem;">
+    Sign in to manage points for your assigned rounds.
+  </p>
+  <form method="post">
+    {% csrf_token %}
+    {% if form.errors %}
+      <div class="form-message error">Invalid username or password. Please try again.</div>
+    {% endif %}
+
+    <div class="form-group">
+      <label for="id_username">Username</label>
+      {{ form.username }}
+    </div>
+
+    <div class="form-group">
+      <label for="id_password">Password</label>
+      {{ form.password }}
+    </div>
+
+    <button type="submit" class="btn btn-primary btn-full">Login →</button>
+  </form>
+</div>
+{% endblock %}
