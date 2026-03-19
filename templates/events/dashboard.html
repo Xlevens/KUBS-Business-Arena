@@ -13,7 +13,7 @@
 
   {% if rnd.contestants.all %}
   <div class="table-wrapper">
-    <table class="leaderboard-table" id="table-{{ rnd.id }}">
+    <table class="leaderboard-table dashboard-table" id="table-{{ rnd.id }}">
       <thead>
         <tr>
           <th>Name</th>
@@ -28,7 +28,7 @@
           <td>{{ contestant.name }}</td>
           <td>{{ contestant.roll_number }}</td>
           <td class="points-cell" id="pts-{{ contestant.id }}">{{ contestant.points }}</td>
-          <td class="action-cell">
+          <td>
             <div class="point-form" data-id="{{ contestant.id }}">
               <input type="number" class="pts-input" min="1" placeholder="Pts" />
               <input type="text" class="reason-input" placeholder="Reason (optional)" />

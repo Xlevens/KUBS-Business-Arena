@@ -16,27 +16,27 @@
       <a href="{% url 'introduction' %}">🏆 KUBS Business Arena 2026</a>
     </div>
 
-    <!-- Hamburger toggle (visible on mobile) -->
-    <button class="nav-toggle" id="nav-toggle" aria-label="Toggle navigation" aria-expanded="false">
+    <!-- Hamburger button — only visible on mobile via CSS -->
+    <button class="nav-toggle" id="nav-toggle" aria-label="Open navigation" aria-expanded="false" aria-controls="nav-links">
       <span></span>
       <span></span>
       <span></span>
     </button>
 
     <ul class="nav-links" id="nav-links">
-      <li><a href="{% url 'introduction' %}">Home</a></li>
+
       <li><a href="{% url 'register' %}">Register</a></li>
       <li><a href="{% url 'leaderboard' %}">Leaderboard</a></li>
       {% if user.is_authenticated %}
         <li><a href="{% url 'dashboard' %}">Dashboard</a></li>
         <li>
-          <form method="post" action="{% url 'logout' %}" style="display:inline;width:100%">
+          <form method="post" action="{% url 'logout' %}" style="display:inline">
             {% csrf_token %}
             <button type="submit" class="nav-btn">Logout ({{ user.username }})</button>
           </form>
         </li>
       {% else %}
-        <li><a href="{% url 'login' %}">Login</a></li>
+
       {% endif %}
     </ul>
   </nav>
@@ -56,34 +56,47 @@
     <p>&copy; 2026 KUBS Business Arena. All rights reserved.</p>
   </footer>
 
-  <!-- Mobile nav toggle script -->
   <script>
-    const toggle = document.getElementById('nav-toggle');
-    const navLinks = document.getElementById('nav-links');
+    (function () {
+      const toggle = document.getElementById('nav-toggle');
+      const links  = document.getElementById('nav-links');
 
-    toggle.addEventListener('click', () => {
-      const isOpen = navLinks.classList.toggle('open');
-      toggle.classList.toggle('open', isOpen);
-      toggle.setAttribute('aria-expanded', isOpen);
-    });
-
-    // Close nav when a link is clicked (single-page or normal navigation)
-    navLinks.querySelectorAll('a').forEach(link => {
-      link.addEventListener('click', () => {
-        navLinks.classList.remove('open');
-        toggle.classList.remove('open');
-        toggle.setAttribute('aria-expanded', 'false');
-      });
-    });
-
-    // Close nav on outside click
-    document.addEventListener('click', (e) => {
-      if (!toggle.contains(e.target) && !navLinks.contains(e.target)) {
-        navLinks.classList.remove('open');
-        toggle.classList.remove('open');
-        toggle.setAttribute('aria-expanded', 'false');
+      function open() {
+        links.classList.add('open');
+        toggle.classList.add('open');
+        toggle.setAttribute('aria-expanded', 'true');
+        toggle.setAttribute('aria-label', 'Close navigation');
       }
-    });
+
+      function close() {
+        links.classList.remove('open');
+        toggle.classList.remove('open');
+        toggle.setAttribute('aria-expanded', 'false');
+        toggle.setAttribute('aria-label', 'Open navigation');
+      }
+
+      toggle.addEventListener('click', function (e) {
+        e.stopPropagation();
+        links.classList.contains('open') ? close() : open();
+      });
+
+      /* Close when any nav link is tapped */
+      links.querySelectorAll('a').forEach(function (a) {
+        a.addEventListener('click', close);
+      });
+
+      /* Close when clicking outside the navbar */
+      document.addEventListener('click', function (e) {
+        if (!toggle.contains(e.target) && !links.contains(e.target)) {
+          close();
+        }
+      });
+
+      /* Close on Escape key */
+      document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape') close();
+      });
+    })();
   </script>
 
   {% block extra_scripts %}{% endblock %}
